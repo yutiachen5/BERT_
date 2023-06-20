@@ -73,17 +73,36 @@ out_file.close()
 
 # # Build BPE tokenizer vocab
 
-seqs = open(output_txt_path, 'r', encoding='utf-8').read().split('\n')
+output_txt_path = '/data/keyang/pretraining_data.txt'
+filesize = 153845916535                 #size of the really big file
+f = open(output_txt_path, 'r',encoding='utf-8', errors='ignore')
+
+seqs = []
+max_num_sentences = 1000000
+
+
+for i in range(max_num_sentences):
+    offset = random.randrange(filesize)
+    f.seek(offset)  # go to random position
+    f.readline()  # discard - bound to be partial line
+    random_line=f.readline()  # bingo!
+    # extra to handle last/first line edge cases
+    if len(random_line) == 0:  # we have hit the end
+        f.seek(0)
+        random_line = f.readline()  # so we'll grab the first line instead
+    seqs.append(random_line)
+
+
+nt_biallele_code = json.load(open('./resource/snp_vocab.json', 'r'))
 unigram_tokens = list(nt_biallele_code.values())
 
-random.seed(0)
-random.shuffle(seqs)
 
-char_bpe_tokenizer = SentencePieceBPETokenizer()
+char_bpe_tokenizer = CharBPETokenizer()
 
-
-char_bpe_tokenizer.train_from_iterator(seqs[:max_num_sentences], special_tokens=['[UNK]','[CLS]','[SEP]'], vocab_size=32000, initial_alphabet=unigram_tokens)
+print('start training tokenizer')
+char_bpe_tokenizer.train_from_iterator(seqs[:max_num_sentences], special_tokens=['[UNK]','[CLS]','[SEP]'], vocab_size=20000, initial_alphabet=unigram_tokens)
 char_bpe_tokenizer.save_model(directory='/data/keyang/tokenizers/', prefix=f'chr_diploid')
+
 
 
 

@@ -33,7 +33,7 @@ nt_biallele_code.update({"A": "A", "G": "G", "T": "T", "C": "C", "N": "N",
 
 
 with open('./resource/snp_vocab.json', "w", encoding="utf-8") as outfile:
-    json.dump(nt_biallele_code, outfile)
+    json.dump(nt_biallele_code, outfile, ensure_ascii=False)
 #nt_biallele_code = json.load(open(args['vocab_path'], 'r'))
 
 dir_in = '/data/keyang/pretraining_matrix'
