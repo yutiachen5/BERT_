@@ -9,8 +9,8 @@ import os
 import scipy.sparse as sp
 
 parser = argparse.ArgumentParser(description='Generate tokens from profile matrix')
-parser.add_argument('--in_path', default='/data/keyang/pretraining_data/NC_000001.11.npz', type=str)
-parser.add_argument('--out_path', default='/data/keyang/pretraining_token/token_NC_000001.11.txt', type=str)
+parser.add_argument('--in_path', default='/data/keyang/pretraining_matrix/NC_000001.11.npz', type=str)
+parser.add_argument('--out_path', default='/data/keyang/pretraining_txt/token_NC_000001.11.txt', type=str)
 #parser.add_argument('--vocab_path', default='./resource/snp_vocab.json', type=str)
 parser.add_argument('--nt_to_idx_path', default='./resource/nucleotide_to_index.json', type=str)
 parser.add_argument('--batch_len', default=100000, type=int)
@@ -23,7 +23,7 @@ nt_to_index = json.load(open(args['nt_to_idx_path'], 'r'))
 index_to_nt = {v:k for k,v in nt_to_index.items()}
 
 # Load Vocab
-biallele=[i[0]+'_'+i[1]  for i in itertools.permutations(nt_to_index.keys(), 2) ]
+biallele=[i[0]+'_'+i[1]  for i in itertools.combinations(sorted(nt_to_index.keys()), 2) ]
 first_chr=0x4E00
 vocabs=[chr(first_chr+i) for i in range(len(biallele))]
 nt_biallele_code={biallele[i]:vocabs[i] for i in range(len(biallele))}
@@ -36,8 +36,8 @@ with open('./resource/snp_vocab.json', "w", encoding="utf-8") as outfile:
     json.dump(nt_biallele_code, outfile)
 #nt_biallele_code = json.load(open(args['vocab_path'], 'r'))
 
-dir_in = '/data/keyang/pretraining_data'
-dir_out= '/data/keyang/pretraining_token'
+dir_in = '/data/keyang/pretraining_matrix'
+dir_out= '/data/keyang/pretraining_txt'
 
 for filename in os.listdir(dir_in): # Loop over chromosome
     if os.path.isfile(os.path.join(dir_in, filename)):
