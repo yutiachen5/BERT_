@@ -47,13 +47,16 @@ class Dataset(object):
         self.smiles_emb_data = smiles_emb.main(self.smiles_dir)
         # self.snp_emb_data = snp_emb.main(snp_dir)
 
+        # merge snp and smiles data by cell-line name
+        self.dataset = pd.merge(self.smiles_emb_data, self.snp_emb_data, on='CELL_LINE_NAME', how='inner')
+
     def load(self):
         smiles_data = np.load(self.smiles_dir)
         snp_data = np.load(self.snp_dir)
         return snp_data, smiles_data
 
     def get_dataset(self):
-        self_supervised_dataset = SelfSupervisedDataset(# snp_emb_data=self.snp_emb_data,
-                                                        smiles_emb_data=self.smiles_emb_data,
+        self_supervised_dataset = SelfSupervisedDataset(# snp_emb_data=self.dataset['snp_embedding'],
+                                                        smiles_emb_data=self.dataset['smiles_embedding'],
                                                          logger=self.logger)
         return self_supervised_dataset
