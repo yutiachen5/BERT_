@@ -74,7 +74,8 @@ def main(smiles_path):
     HBV_emb = pkl.load(open(os.path.join(model_root, 'HBV_emb.pkl'), 'rb+'))
 
     HBV_vec = get_sentence_vec(ECFP_list, HBV_emb, HBV_token)
+    text['smiles_embedding'] = HBV_vec
 
     # print('size of embedding vector: ',HBV_vec[1].size)
     # print('example: ', HBV_vec[1])
-    return HBV_vec
+    return text

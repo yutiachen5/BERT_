@@ -5,10 +5,15 @@ import torch
 import numpy as np
 
 import DataLoader.dataloader as module_data
-# from data.utility import DatasetSplit
-# from model.bert_pretrain import get_bert_model
-# from model.metric import metrics
+from data.utility import DatasetSplit
+from model.pretrain import get_bert_model
+from model.metric import metrics
 from parse_config import ConfigParser
+
+from transformers import (
+    TrainingArguments,
+    Trainer,
+    EarlyStoppingCallback)
 
 
 def main(config):
@@ -29,6 +34,66 @@ def main(config):
     dataset = config.init_obj('dataset', module_data)
     train_dataset = dataset.get_dataset()
     test_dataset = None
+
+    if holdout is not None:
+        assert 0.0 < holdout < 1.0, "Must hold out a fractional proportion of data"
+        # No validation since we aren't really doing MLM elsewhere
+        test_dataset = DatasetSplit(
+            logger=logger, full_dataset=train_dataset, split="test", valid=0, test=holdout
+        )
+        train_dataset = DatasetSplit(
+            logger=logger, full_dataset=train_dataset, split="train", valid=0, test=holdout
+        )
+
+    training_args = TrainingArguments(
+        output_dir=config._save_dir,
+        overwrite_output_dir=True,
+        num_train_epochs=config['trainer']['epochs'],
+        per_device_train_batch_size=config['trainer']['batch_size'],
+        learning_rate=config['trainer']['lr'],
+        warmup_ratio=config['trainer']['warmup'],
+        evaluation_strategy="epoch" if holdout else "no",
+        eval_accumulation_steps=config['trainer']['eval_accumulation_steps'] if 'eval_accumulation_steps' in config[
+            'trainer'] else None,
+        per_device_eval_batch_size=config['trainer']['batch_size'],
+        logging_strategy="steps",
+        logging_steps=config['trainer']['logging_steps'],
+        save_strategy="epoch",
+        save_total_limit=1,
+        dataloader_num_workers=0,
+        load_best_model_at_end=True,
+        no_cuda=False,  # Useful for debugging
+        skip_memory_metrics=True,
+        disable_tqdm=True,
+        metric_for_best_model='acc',
+        logging_dir=config._log_dir)
+
+    model = get_bert_model(
+        logger=logger,
+        bert_variant=config['model']['bert'],
+        vocab_size=vocab_size,
+        pad_token_id=pad_token_id,
+        **config['model']['args'])
+    logger.info(model)
+
+    trainable_params = model.parameters()
+    params = sum([np.prod(p.size()) for p in trainable_params if p.requires_grad])
+    logger.info(f'Trainable parameters {params}.')
+
+    token_with_special_list = dataset.get_token_list()
+    my_metrics = metrics(token_with_special_list=token_with_special_list)
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=test_dataset,  # Defaults to None, see above
+        compute_metrics=my_metrics.compute_metrics,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=3)]
+    )
+
+    trainer.train()
+    trainer.save_model(config._save_dir)
+
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser(description='PyTorch Template')
