@@ -21,9 +21,9 @@ import scipy.sparse
 
 # In[ ]:
 
-relative_path='../../../data/keyang/'
-input_fasta_path = relative_path+'hs37d5.fa' # Reference Fasta File
-input_tabix_path = relative_path+'GCF_000001405.25.gz' # dbSNP Tabix File
+relative_path='/data/keyang/'
+input_fasta_path = relative_path+'hg38.fa' # Reference Fasta File
+input_tabix_path = relative_path+'GCF_000001405.40.gz' # dbSNP Tabix File
 output_path = relative_path+'pretraining_data' # Output Folder Path
 
 
@@ -183,8 +183,8 @@ for fasta_chr_key, tabix_chr_key, chr_len in zip(fasta_chr_keys, tabix_chr_keys,
 
                             # assign proba to deleted suffix
                             for i in range(len(alt), len(ref)):
-                                fasta_nt = fasta_seq[i] #ref_nt
-                                data_block[start_pos + i, nt_to_index[fasta_nt]] += proba / len(nt_to_index[fasta_nt])
+                                fasta_nt = ref[i] #ref_nt
+                                data_block[start_pos + i, nt_to_index[fasta_nt+'D']] += proba / len(nt_to_index[fasta_nt+'D'])
 
                         else:  # if len(alt) > len(ref):
                             # INSERTION
@@ -207,7 +207,7 @@ for fasta_chr_key, tabix_chr_key, chr_len in zip(fasta_chr_keys, tabix_chr_keys,
                                         else:
                                             unchanged.append(i)
                                     for i in unchanged:
-                                        data_block[start_pos + i, nt_to_index[alt[i]]] += proba / len(nt_to_index[alt[i]])
+                                        data_block[start_pos + i, nt_to_index[ref[i]]] += proba / len(nt_to_index[ref[i]])
                                 else: #ref seq incomplete
                                     for i in range(len(ref) - 1):
                                         data_block[start_pos + i, nt_to_index[alt[i]]] += proba / len(nt_to_index[alt[i]])
@@ -248,7 +248,7 @@ for fasta_chr_key, tabix_chr_key, chr_len in zip(fasta_chr_keys, tabix_chr_keys,
 
                                 # assign proba to deleted suffix
                                 for i in range(len(alt), len(ref)):
-                                    fasta_nt = fasta_seq[i]  # ref_nt
+                                    fasta_nt = ref[i]  # ref_nt
                                     data_block[start_pos + i, nt_to_index[fasta_nt]] += proba / len(nt_to_index[fasta_nt])
 
                             else:  # if len(alt) > len(ref):
@@ -273,8 +273,8 @@ for fasta_chr_key, tabix_chr_key, chr_len in zip(fasta_chr_keys, tabix_chr_keys,
                                             else:
                                                 unchanged.append(i)
                                         for i in unchanged:
-                                            data_block[start_pos + i, nt_to_index[alt[i]]] += proba / len(
-                                                nt_to_index[alt[i]])
+                                            data_block[start_pos + i, nt_to_index[ref[i]]] += proba / len(
+                                                nt_to_index[ref[i]])
                                     else:  # ref seq incomplete
                                         for i in range(len(ref) - 1):
                                             data_block[start_pos + i, nt_to_index[alt[i]]] += proba / len(
