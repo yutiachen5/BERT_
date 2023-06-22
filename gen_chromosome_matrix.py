@@ -24,7 +24,7 @@ import scipy.sparse
 relative_path='/data/keyang/'
 input_fasta_path = relative_path+'hg38.fa' # Reference Fasta File
 input_tabix_path = relative_path+'GCF_000001405.40.gz' # dbSNP Tabix File
-output_path = relative_path+'pretraining_data' # Output Folder Path
+output_path = relative_path+'pretraining_matrix' # Output Folder Path
 
 
 # In[ ]:
@@ -81,7 +81,9 @@ tb_file = pysam.TabixFile(input_tabix_path)
 
 fasta_chr_keyword = 'dna:chromosome'
 fasta_chr_keys = [k for k in c37_dict.keys() if fasta_chr_keyword in k]
-
+chr_order=[str(i+1) for i in range(22)]+['X','Y']
+fasta_chr_keys_d={i.split(' ')[0].replace('>',''):i for i in fasta_chr_keys}
+fasta_chr_keys=[fasta_chr_keys_d[i]for i in chr_order]
 
 # In[ ]:
 
