@@ -74,7 +74,7 @@ out_file.close()
 # # Build BPE tokenizer vocab
 
 output_txt_path = '/data/keyang/pretraining_data.txt'
-filesize = 153845916535                 #size of the really big file
+filesize = os.path.getsize(output_txt_path)             #size of the really big file
 f = open(output_txt_path, 'r',encoding='utf-8', errors='ignore')
 
 seqs = []
