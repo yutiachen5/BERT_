@@ -100,7 +100,7 @@ unigram_tokens = list(nt_biallele_code.values())
 char_bpe_tokenizer = CharBPETokenizer()
 
 print('start training tokenizer')
-char_bpe_tokenizer.train_from_iterator(seqs[:max_num_sentences], special_tokens=['[UNK]','[CLS]','[SEP]'], vocab_size=20000, initial_alphabet=unigram_tokens)
+char_bpe_tokenizer.train_from_iterator(seqs[:max_num_sentences], special_tokens=['[UNK]','[CLS]','[SEP]'], vocab_size=22000, initial_alphabet=unigram_tokens)
 char_bpe_tokenizer.save_model(directory='/data/keyang/tokenizers/', prefix=f'chr_diploid')
 
 
