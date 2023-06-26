@@ -6,9 +6,9 @@ import numpy as np
 
 import DataLoader.dataloader as module_data
 from data.utility import DatasetSplit
-from model.pretrain import get_bert_model
 from model.metric import metrics
 from parse_config import ConfigParser
+from model.MLP import MLPRegression
 
 from transformers import (
     TrainingArguments,
@@ -37,7 +37,6 @@ def main(config):
 
     if holdout is not None:
         assert 0.0 < holdout < 1.0, "Must hold out a fractional proportion of data"
-        # No validation since we aren't really doing MLM elsewhere
         test_dataset = DatasetSplit(
             logger=logger, full_dataset=train_dataset, split="test", valid=0, test=holdout
         )
@@ -68,11 +67,9 @@ def main(config):
         metric_for_best_model='acc',
         logging_dir=config._log_dir)
 
-    model = get_bert_model(
+    model = MLPRegression(
         logger=logger,
-        bert_variant=config['model']['bert'],
-        vocab_size=vocab_size,
-        pad_token_id=pad_token_id,
+        variant=config['model']['MLP'],
         **config['model']['args'])
     logger.info(model)
 
@@ -80,14 +77,13 @@ def main(config):
     params = sum([np.prod(p.size()) for p in trainable_params if p.requires_grad])
     logger.info(f'Trainable parameters {params}.')
 
-    token_with_special_list = dataset.get_token_list()
-    my_metrics = metrics(token_with_special_list=token_with_special_list)
+    my_metrics = metrics()
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=test_dataset,  # Defaults to None, see above
-        compute_metrics=my_metrics.compute_metrics,
+        compute_metrics=my_metrics.rmse_cal(),
         callbacks=[EarlyStoppingCallback(early_stopping_patience=3)]
     )
 
