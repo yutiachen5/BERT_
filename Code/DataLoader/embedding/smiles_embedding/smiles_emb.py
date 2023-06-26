@@ -56,7 +56,6 @@ def get_sentence_vec(tokens_list, embedding, token_dict):
 
 def main(smiles_path):
     text = pd.read_csv(smiles_path)
-    text = text[text['SMILES'] != 'unmatched']
     text.reset_index(inplace=True, drop=True)
     smiles_list = np.asarray(text['SMILES'])
 
