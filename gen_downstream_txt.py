@@ -55,7 +55,7 @@ print('Total Length GRch38', sum(c38_lens),'\nMin Length GRch38', min(c38_lens),
 
 
 csv = pd.read_csv(input_csv_path)
-cell_ids=list(csv.DepMap_ID.drop_duplicates())
+cell_ids=list(pd.read_csv('common_cell_line_ids.csv').DepMap_ID)
 csv_depmap=csv[['Chrom', 'Pos', 'Ref', 'Alt','DepMap_ID','GT']]
 csv_depmap=csv_depmap.set_index('DepMap_ID')
 
