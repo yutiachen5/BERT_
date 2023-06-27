@@ -6,7 +6,7 @@ import numpy as np
 
 import DataLoader.dataloader as module_data
 from data.utility import DatasetSplit
-from model.metric import metrics
+from model.metric import MLPmetrics
 from parse_config import ConfigParser
 from model.MLP import MLPRegression
 
@@ -30,7 +30,6 @@ def main(config):
     holdout = config['dataset']['args']['test_split']
     config['dataset']['args']['config'] = config
     config['dataset']['args']['logger'] = logger
-    # snp_embedding = snp_emb.main(config['dataset']['args']['snp_dir'])
     dataset = config.init_obj('dataset', module_data)
     train_dataset = dataset.get_dataset()
     test_dataset = None
@@ -64,7 +63,7 @@ def main(config):
         no_cuda=False,  # Useful for debugging
         skip_memory_metrics=True,
         disable_tqdm=True,
-        metric_for_best_model='acc',
+        metric_for_best_model='eva',
         logging_dir=config._log_dir)
 
     model = MLPRegression(
@@ -77,7 +76,7 @@ def main(config):
     params = sum([np.prod(p.size()) for p in trainable_params if p.requires_grad])
     logger.info(f'Trainable parameters {params}.')
 
-    my_metrics = metrics()
+    my_metrics = MLPmetrics()
     trainer = Trainer(
         model=model,
         args=training_args,
