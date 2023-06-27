@@ -8,24 +8,21 @@ from embedding.smiles_embedding import smiles_emb
 class SelfSupervisedDataset(Dataset):
     def __init__(self,
                  logger,
-                 # snp_emb_data,
-                 smiles_emb_data,):
-        # self.snp_emb_data = snp_emb_data
-        self.smiles_emb_data = smiles_emb_data
+                 emb_data,
+                 ic50):
+        self.emb_data = emb_data
+        self.ic50 = ic50
         self.logger = logger
-
-        self.logger.info(f"Creating self supervised smiles dataset with {len(self.smiles_emb_data)} smiles")
-        # self.logger.info(f"Creating self supervised snp dataset with {len(self.snp_data)} sequences")
+        self.logger.info(f"Creating self supervised dataset with length of {len(self.emb_data)} .")
 
     def __len__(self):
-        return len(self.smiles_emb_data)
+        return len(self.emb_data)
 
     def __getitem__(self, i):
-        # input_snp_id = self.snp[i]
-        input_smiles_id = self.smiles_emb_data[i]
-        # return {"input_ids_snp": torch.tensor(input_snp_id, dtype=torch.long),
-        #         "input_ids_smiles": torch.tensor(input_smiles_id, dtype=torch.long)}
-        return {"input_ids_smiles": torch.tensor(input_smiles_id, dtype=torch.long)}
+        input_emb = self.emb_data[i]
+        true_val = self.ic50[i]
+        return {"input": torch.tensor(input_emb, dtype=torch.long),
+                "ic50": torch.tensor(true_val, dtype=torch.long)}
 
 
 class Dataset(object):
@@ -43,19 +40,19 @@ class Dataset(object):
         self.snp_dir = snp_dir
         self.test_split = test_split
 
-        # self.snp_data, self.smiles_data = self.load()
+        self.ic50 = self.load_ic50()
         self.smiles_emb_data = smiles_emb.main(self.smiles_dir)
         # self.snp_emb_data = snp_emb.main(snp_dir)
 
         # preprocessing
         self.emb_data = np.inner(self.smiles_emb_data, self.snp_emb_data)
 
-    def load(self):
-        smiles_data = np.load(self.smiles_dir)
-        snp_data = np.load(self.snp_dir)
-        return snp_data, smiles_data
+    def load_ic50(self):
+        ic50_true = list(pd.read_csv(self.smiles_dir)['LN_IC50'])
+        return ic50_true
 
     def get_dataset(self):
         self_supervised_dataset = SelfSupervisedDataset(emb_data=self.emb_data,
-                                                         logger=self.logger)
+                                                         logger=self.logger,
+                                                        ic50 = self.ic50)
         return self_supervised_dataset
