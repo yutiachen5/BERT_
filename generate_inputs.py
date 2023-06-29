@@ -39,7 +39,7 @@ with open(output_txt_path, 'r', encoding='utf-8') as file:
 
 
 
-np.save('tokenized.npy',L)
+np.save('/data/keyang/tokenized.npy',L)
 
 
 
