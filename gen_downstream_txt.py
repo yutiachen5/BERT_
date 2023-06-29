@@ -172,7 +172,7 @@ def parse_cell_chr(cell_id,csv_chr,fasta_seq,csv_chr_key):
         cell_seq_string = ''.join(cell_seq)
         encoded = tokenizer.encode(cell_seq_string)
         input_ids = np.array(encoded.ids)
-        np.save(f"{output_path}/{cell_id}_{csv_chr_key}.txt",input_ids )
+        np.save(f"{output_path}/{cell_id}_{csv_chr_key}",input_ids )
         #with open(f"{output_path}/{cell_id}_{csv_chr_key}.txt", mode="w") as file:
         #    file.write(cell_seq_string)
     except KeyError:
@@ -189,9 +189,11 @@ for fasta_chr_key, csv_chr_key, chr_len in zip(fasta_chr_keys, csv_chr_keys, chr
     fasta_seq = c38_dict[fasta_chr_key]  # Fasta reference
     csv_chr=csv_depmap[csv_depmap['Chrom']== csv_chr_key]
     
-    results = Parallel(n_jobs=4)(
-    delayed(parse_cell_chr)(cell_id,csv_chr,fasta_seq,csv_chr_key) for cell_id in tqdm.tqdm(cell_ids, desc='Processing')
-)
+    #results = Parallel(n_jobs=4)(
+    #delayed(parse_cell_chr)(cell_id,csv_chr,fasta_seq,csv_chr_key) for cell_id in tqdm.tqdm(cell_ids, desc='Processing')
+#)
+
+
     for cell_id in tqdm.tqdm(cell_ids):
         parse_cell_chr(cell_id,csv_chr,fasta_seq,csv_chr_key)
     
