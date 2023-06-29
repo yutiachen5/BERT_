@@ -11,6 +11,13 @@ import tqdm
 from joblib import Parallel, delayed
 import re
 import json
+import numpy as np
+from tokenizers import CharBPETokenizer
+tokenizer = CharBPETokenizer(
+    vocab='/data/keyang/tokenizers/chr_diploid-vocab.json',
+    merges='/data/keyang/tokenizers/chr_diploid-merges.txt',
+    unk_token='[UNK]'
+)
 
 #双侧
 
@@ -163,8 +170,11 @@ def parse_cell_chr(cell_id,csv_chr,fasta_seq,csv_chr_key):
                         cell_seq[start_pos + len(ref) - 1] = nt_biallele_code[
                             '_'.join([f'{alt[len(ref) - 1]}I', ref[len(ref) - 1]])]
         cell_seq_string = ''.join(cell_seq)
-        with open(f"{output_path}/{cell_id}_{csv_chr_key}.txt", mode="w") as file:
-            file.write(cell_seq_string)
+        encoded = tokenizer.encode(cell_seq_string)
+        input_ids = np.array(encoded.ids)
+        np.save(f"{output_path}/{cell_id}_{csv_chr_key}.txt",input_ids )
+        #with open(f"{output_path}/{cell_id}_{csv_chr_key}.txt", mode="w") as file:
+        #    file.write(cell_seq_string)
     except KeyError:
         print(cell_id)
 
