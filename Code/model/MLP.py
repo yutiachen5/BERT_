@@ -5,6 +5,8 @@ def MLPRegression(logger,
                   variant: str,
                   **kwargs):
     if variant == "MLP":
-        logger.info("Loading MLP Regression model")
+        logger.info("Loading MLP Regression model.")
         model = MLPRegressor(**kwargs)
+    else:
+        raise ValueError(f"Unrecognized variant: {variant}.")
     return model

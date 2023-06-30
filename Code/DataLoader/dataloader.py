@@ -13,16 +13,16 @@ class SelfSupervisedDataset(Dataset):
         self.emb_data = emb_data
         self.ic50 = ic50
         self.logger = logger
-        self.logger.info(f"Creating self supervised dataset with length of {len(self.emb_data)} .")
+        self.logger.info(f"Creating self supervised dataset with length of {len(self.emb_data)}.")
 
     def __len__(self):
         return len(self.emb_data)
 
     def __getitem__(self, i):
         input_emb = self.emb_data[i]
-        true_val = self.ic50[i]
+        true_ic50 = self.ic50[i]
         return {"input": torch.tensor(input_emb, dtype=torch.long),
-                "ic50": torch.tensor(true_val, dtype=torch.long)}
+                "ic50": torch.tensor(true_ic50, dtype=torch.long)}
 
 
 class Dataset(object):
@@ -44,7 +44,7 @@ class Dataset(object):
         self.smiles_emb_data = smiles_emb.main(self.smiles_dir)
         # self.snp_emb_data = snp_emb.main(snp_dir)
 
-        # preprocessing
+        # preprocessing--inner product of SMILES & SNP
         self.emb_data = np.inner(self.smiles_emb_data, self.snp_emb_data)
 
     def load_ic50(self):
@@ -53,6 +53,6 @@ class Dataset(object):
 
     def get_dataset(self):
         self_supervised_dataset = SelfSupervisedDataset(emb_data=self.emb_data,
-                                                         logger=self.logger,
-                                                        ic50 = self.ic50)
+                                                        logger=self.logger,
+                                                        ic50=self.ic50)
         return self_supervised_dataset
