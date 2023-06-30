@@ -63,7 +63,7 @@ def main(config):
         no_cuda=False,  # Useful for debugging
         skip_memory_metrics=True,
         disable_tqdm=True,
-        metric_for_best_model='eva',
+        metric_for_best_model='rmse',
         logging_dir=config._log_dir)
 
     model = MLPRegression(
