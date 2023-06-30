@@ -6,7 +6,7 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem
 
-
+# reference from: https://github.com/NTU-MedAI/S2DV
 def get_ECFP(mol, radio):
     ECFPs = mol2alt_sentence(mol, radio)
     if len(ECFPs) % (radio + 1) != 0:
