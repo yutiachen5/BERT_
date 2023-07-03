@@ -27,7 +27,7 @@ input_fasta_path = '/data/keyang/hg38.fa' # Reference Fasta File
 input_csv_path = '/data/keyang/OmicsSomaticMutations.csv' # dbSNP csv File
 output_path = '/data/keyang/down_stream_data' # Output Folder Path
 
-nt_biallele_code =json.load(open('./resource/snp_vocab.json', "r", encoding="utf-8"))
+nt_biallele_code =json.load(open('./resource/snp_vocab1.json', "r", encoding="utf-8"))
 
 def parse_fasta(path, header_identifier):
     # Read file
@@ -87,96 +87,102 @@ for fasta_chr_key in fasta_chr_keys:
 
 def parse_cell_chr(cell_id,csv_chr,fasta_seq,csv_chr_key):
     try:
-        mutations=csv_chr.loc[cell_id] #df
-        cell_seq = list(fasta_seq)  # Convert the string to a list
+        mutations = csv_chr.loc[cell_id]  # df
+    except KeyError or ValueError:
+        print(cell_id)
+        return
+    cell_seq = list(fasta_seq)  # Convert the string to a list
+    for row in mutations.iloc:
 
-        for row in mutations.iloc:
+        try:
             dict_row = dict(row)
-            start_pos, ref, alt, gt = int(dict_row['Pos']) - 1, dict_row['Ref'], dict_row['Alt'], dict_row['GT']
-            end_pos = start_pos + len(ref) - 1  # parse row
+        except ValueError:
+            continue
 
-            # handle SNV and INDEL
-            if len(alt) == len(ref):
-                # SNV / MUTATION - mutated nucleotide
-                for i, nt in enumerate(alt):
-                    if nt != 'N':
-                        if gt == '1|1':
-                            #mutation in both chromatids if indicated
-                            cell_seq[start_pos + i] = nt_biallele_code['_'.join([nt,nt])]
-                        else:
-                            cell_seq[start_pos + i] = nt_biallele_code['_'.join(sorted([nt, ref[i]]))]
-            elif len(alt) < len(ref):
-                # DELETION - non-deleted prefix
-                for i, nt in enumerate(alt):
-                    cell_seq[start_pos + i] = nt
-                # assign proba to deleted suffix
-                if gt == '1|1':
-                    # mutation in both chromatids if indicated
-                    for i in range(len(alt), len(ref)):
-                        fasta_nt = ref[i]  # ref_nt
-                        cell_seq[start_pos + i] = nt_biallele_code['_'.join([fasta_nt + 'D',fasta_nt + 'D'])]
-                else:
-                    for i in range(len(alt), len(ref)):
-                        fasta_nt = ref[i]  # ref_nt
-                        cell_seq[start_pos + i] = nt_biallele_code['_'.join(sorted([fasta_nt + 'D',ref[i]]))]
-            else:  # if len(alt) > len(ref):
-                # INSERTION
-                if len(alt) <= 20:  # to save time
-                    m = 0
-                    ref_list = [c for c in ref]
-                    ref_1 = '[ATCG]*'.join(ref_list)
-                    search_obj = re.search(ref_1, alt)
-                    if search_obj:
-                        unchanged = []
-                        for i in range(len(ref)):
-                            if ref[i] != alt[i + m]:
-                                # assign insertion proba to the every nucleotide insertion
-                                # the first nb in alt every time inerstion occurs
-                                if gt == '1|1':
-                                    cell_seq[start_pos + i] = nt_biallele_code[
-                                        '_'.join([f'{alt[i + m]}I', f'{alt[i + m]}I'])]
-                                else:
-                                    cell_seq[start_pos + i] = nt_biallele_code[
-                                        '_'.join([f'{alt[i + m]}I', ref[i]])]
-                                for j in range(1, len(alt) - i - m):
-                                    if ref[i] == alt[i + m + j]:
-                                        m += j
-                                        break
-                            else:
-                                unchanged.append(i)
-                        for i in unchanged:
-                            cell_seq[start_pos + i] = ref[i]
-                    else:  # ref seq incomplete
-                        if gt =='1|1':
-                            for i in range(len(ref) - 1):
-                                cell_seq[start_pos + i] = nt_biallele_code['_'.join([alt[i],alt[i]])]
-                            # assign insertion proba to the last nucleotide
-                            cell_seq[start_pos + len(ref) - 1] = nt_biallele_code['_'.join([f'{alt[len(ref) - 1]}I',f'{alt[len(ref) - 1]}I'])]
-                        else:
-                            for i in range(len(ref) - 1):
-                                cell_seq[start_pos + i] = nt_biallele_code['_'.join([alt[i],ref[i]])]
-                            cell_seq[start_pos + len(ref) - 1] = nt_biallele_code[
-                                '_'.join([f'{alt[len(ref) - 1]}I', ref[len(ref) - 1]])]
-                else:  # too long to process
+        start_pos, ref, alt, gt = int(dict_row['Pos']) - 1, dict_row['Ref'], dict_row['Alt'], dict_row['GT']
+        end_pos = start_pos + len(ref) - 1  # parse row
+
+        # handle SNV and INDEL
+        if len(alt) == len(ref):
+            # SNV / MUTATION - mutated nucleotide
+            for i, nt in enumerate(alt):
+                if nt != 'N':
                     if gt == '1|1':
+                        #mutation in both chromatids if indicated
+                        cell_seq[start_pos + i] = nt_biallele_code['_'.join([nt,nt])]
+                    else:
+                        cell_seq[start_pos + i] = nt_biallele_code['_'.join(sorted([nt, ref[i]]))]
+        elif len(alt) < len(ref):
+            # DELETION - non-deleted prefix
+            for i, nt in enumerate(alt):
+                cell_seq[start_pos + i] = nt
+            # assign proba to deleted suffix
+            if gt == '1|1':
+                # mutation in both chromatids if indicated
+                for i in range(len(alt), len(ref)):
+                    fasta_nt = ref[i]  # ref_nt
+                    cell_seq[start_pos + i] = nt_biallele_code['_'.join([fasta_nt + 'D',fasta_nt + 'D'])]
+            else:
+                for i in range(len(alt), len(ref)):
+                    fasta_nt = ref[i]  # ref_nt
+                    cell_seq[start_pos + i] = nt_biallele_code['_'.join(sorted([fasta_nt + 'D',ref[i]]))]
+        else:  # if len(alt) > len(ref):
+            # INSERTION
+            if len(alt) <= 20:  # to save time
+                m = 0
+                ref_list = [c for c in ref]
+                ref_1 = '[ATCG]*'.join(ref_list)
+                search_obj = re.search(ref_1, alt)
+                if search_obj:
+                    unchanged = []
+                    for i in range(len(ref)):
+                        if ref[i] != alt[i + m]:
+                            # assign insertion proba to the every nucleotide insertion
+                            # the first nb in alt every time inerstion occurs
+                            if gt == '1|1':
+                                cell_seq[start_pos + i] = nt_biallele_code[
+                                    '_'.join([f'{alt[i + m]}I', f'{alt[i + m]}I'])]
+                            else:
+                                cell_seq[start_pos + i] = nt_biallele_code[
+                                    '_'.join(sorted([f'{alt[i + m]}I', ref[i]]))]
+                            for j in range(1, len(alt) - i - m):
+                                if ref[i] == alt[i + m + j]:
+                                    m += j
+                                    break
+                        else:
+                            unchanged.append(i)
+                    for i in unchanged:
+                        cell_seq[start_pos + i] = ref[i]
+                else:  # ref seq incomplete
+                    if gt =='1|1':
                         for i in range(len(ref) - 1):
-                            cell_seq[start_pos + i] = nt_biallele_code['_'.join([alt[i], alt[i]])]
+                            cell_seq[start_pos + i] = nt_biallele_code['_'.join([alt[i],alt[i]])]
                         # assign insertion proba to the last nucleotide
-                        cell_seq[start_pos + len(ref) - 1] = nt_biallele_code[
-                            '_'.join([f'{alt[len(ref) - 1]}I', f'{alt[len(ref) - 1]}I'])]
+                        cell_seq[start_pos + len(ref) - 1] = nt_biallele_code['_'.join([f'{alt[len(ref) - 1]}I',f'{alt[len(ref) - 1]}I'])]
                     else:
                         for i in range(len(ref) - 1):
-                            cell_seq[start_pos + i] = nt_biallele_code['_'.join([alt[i], ref[i]])]
+                            cell_seq[start_pos + i] = nt_biallele_code['_'.join(sorted([alt[i],ref[i]]))]
                         cell_seq[start_pos + len(ref) - 1] = nt_biallele_code[
                             '_'.join([f'{alt[len(ref) - 1]}I', ref[len(ref) - 1]])]
-        cell_seq_string = ''.join(cell_seq)
-        encoded = tokenizer.encode(cell_seq_string)
-        input_ids = np.array(encoded.ids)
-        np.save(f"{output_path}/{cell_id}_{csv_chr_key}",input_ids )
-        #with open(f"{output_path}/{cell_id}_{csv_chr_key}.txt", mode="w") as file:
-        #    file.write(cell_seq_string)
-    except KeyError:
-        print(cell_id)
+            else:  # too long to process
+                if gt == '1|1':
+                    for i in range(len(ref) - 1):
+                        cell_seq[start_pos + i] = nt_biallele_code['_'.join([alt[i], alt[i]])]
+                    # assign insertion proba to the last nucleotide
+                    cell_seq[start_pos + len(ref) - 1] = nt_biallele_code[
+                        '_'.join([f'{alt[len(ref) - 1]}I', f'{alt[len(ref) - 1]}I'])]
+                else:
+                    for i in range(len(ref) - 1):
+                        cell_seq[start_pos + i] = nt_biallele_code['_'.join(sorted([alt[i], ref[i]]))]
+                    cell_seq[start_pos + len(ref) - 1] = nt_biallele_code[
+                        '_'.join(sorted([f'{alt[len(ref) - 1]}I', ref[len(ref) - 1]]))]
+
+    cell_seq_string = ''.join(cell_seq)
+    #encoded = tokenizer.encode(cell_seq_string)
+    #input_ids = np.array(encoded.ids)
+    #np.save(f"{output_path}/{cell_id}_{csv_chr_key}",input_ids )
+    with open(f"{output_path}/{cell_id}_{csv_chr_key}.txt", mode="w") as file:
+        file.write(cell_seq_string)
 
 
 
