@@ -1,0 +1,59 @@
+{
+    "name": "BERT-Finetunning-BSP-FMFM",
+    "n_gpu": 1,
+
+    "data_loader": {
+        "type": "EmbeddedDataset",
+        "args":{
+            "seed": 0,
+            "batch_size": 512,
+            "validation_split": 0.1,
+            "test_split": 0.0,
+            "num_workers": 1,
+            "data_dir": "../ProcessedData",
+            "seq_dir": "../ProcessedData/merged",
+            "test_size": 1000,
+            "shuffle": true
+        }
+    },
+
+    "arch": {
+        "type": "BERTBinding",
+        "args": {
+            "EpitopeBert_dir": "../Result/checkpoints/BERT-Epitope-Pretrain-FMFM-MAA/XXXX_XXXXXX",
+            "ReceptorBert_dir": "../Result/checkpoints/BERT-Beta-Pretrain-FMFM-MAA/XXXX_XXXXXX",
+            "emb_dim": 768
+        }
+    },
+
+    "optimizer": {
+        "type": "AdamW",
+        "args":{
+            "lr": 5e-5,
+            "weight_decay": 0
+        }
+    },
+    "loss": "bce_withlogits_loss",
+    "metrics": [
+        "accuracy", "recall", "roc_auc"
+    ],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 10,
+            "gamma": 0.1
+        }
+    },
+    "trainer": {
+        "epochs": 5,
+
+        "save_dir": "../Result/",
+        "save_period": 200,
+        "verbosity": 2,
+        
+        "monitor": "min val_loss",
+        "early_stop": 3,
+
+        "tensorboard": true
+    }
+}
