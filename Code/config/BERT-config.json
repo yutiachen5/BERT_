@@ -1,0 +1,32 @@
+{
+    "name": "BERT-config",
+    "n_gpu": 1,
+
+    "dataset": {
+        "type": "Dataset",
+        "args":{
+            "smiles_dir": "../ProcessedData/GDSC_SMILES_merged.csv",
+            "snp_dir": "../ProcessedData/tokenized.npy",
+            "seed": 0,
+            "test_split": 0.01
+        }
+    },
+
+    "model": {
+        "MLP": "MLP",
+        "args":{
+            "hidden_layer_sizes": 100
+        }
+    },
+
+    "trainer": {
+        "epochs": 25,
+        "batch_size": 512,
+        "save_dir": "../Result/",
+        "lr": 5e-5,
+        "warmup": 0.1,
+        "eval_accumulation_steps": 1,
+        "logging_steps": 100
+    }
+
+}
