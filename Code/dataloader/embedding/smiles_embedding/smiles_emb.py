@@ -54,10 +54,8 @@ def get_sentence_vec(tokens_list, embedding, token_dict):
     return sent_vec_list
 
 
-def main(smiles_path):
-    text = pd.read_csv(smiles_path)
-    text.reset_index(inplace=True, drop=True)
-    smiles_list = np.asarray(text['SMILES'])
+def main(smiles_dataset):
+    smiles_list = np.asarray(smiles_dataset['SMILES'])
 
     ECFP_list = []
     mol_list = []
@@ -67,14 +65,14 @@ def main(smiles_path):
     for mol in mol_list:
         ECFP = get_ECFP(mol, 1)
         ECFP_list.append(ECFP)
-    model_root = 'DataLoader/embedding/smiles_embedding/'
+    model_root = 'dataloader/embedding/smiles_embedding/'
 
     HBV_token = pkl.load(open(os.path.join(model_root, 'HBV_token.pkl'), 'rb+'))
     HBV_emb = pkl.load(open(os.path.join(model_root, 'HBV_emb.pkl'), 'rb+'))
 
     HBV_vec = get_sentence_vec(ECFP_list, HBV_emb, HBV_token)
-    text['smiles_embedding'] = HBV_vec
+    smiles_dataset['smiles_embedding'] = HBV_vec
 
     # print('size of embedding vector: ',HBV_vec[1].size)
     # print('example: ', HBV_vec[1])
-    return text
+    return smiles_dataset
