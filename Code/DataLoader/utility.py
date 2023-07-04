@@ -18,7 +18,7 @@ class DatasetSplit(Dataset):
     kwargs are forwarded to shuffle_indices_train_valid_test
     """
 
-    def __init__(self, logger,  full_dataset: Dataset, split: str, dynamic_training: bool = False,
+    def __init__(self, logger, full_dataset: Dataset, split: str, dynamic_training: bool = False,
                  **kwargs):
         self.logger = logger
         self.dset = full_dataset
