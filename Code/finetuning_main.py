@@ -10,12 +10,12 @@ import transformers
 from os.path import join
 
 import dataloader.finetuning_dataset as module_data
-# import data.bert_finetuning_er_alphabeta_dataset as module_data
 import model.loss as module_loss
 import model.metric as module_metric
 import model.MLP as module_arch
 from trainer.finetuning_trainer import FineTuningTrainer as Trainer
 from parse_config import ConfigParser
+
 
 def main(config):
     logger = config.get_logger('train')
@@ -38,8 +38,6 @@ def main(config):
         valid_data_loader.sampler.__len__(), 
         test_data_loader.sampler.__len__()
     ))
-    epitope_tokenizer = data_loader.get_epitope_tokenizer()
-    receptor_tokenizer = data_loader.get_receptor_tokenizer()
 
     # build model architecture, then print to console
     model = config.init_obj('arch', module_arch)
@@ -74,13 +72,14 @@ def main(config):
 
     # save the tuned model
     mlp_save_dir = join(config.save_dir, 'MLP')
-    logger.info(f'Saving the tunned MLP model to {mlp_save_dir}.')
+    logger.info(f'Saving the tuned MLP model to {mlp_save_dir}.')
     os.makedirs(mlp_save_dir)
     model.EpitopeBert.save_pretrained(mlp_save_dir)
 
     test_output = trainer.test(epitope_tokenizer=epitope_tokenizer,
                                receptor_tokenizer=receptor_tokenizer)
     logger.info(test_output)
+
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser(description='PyTorch Template')

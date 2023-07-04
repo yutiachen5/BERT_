@@ -4,7 +4,7 @@ import collections
 import torch
 import numpy as np
 
-import dataloader.dataloader as module_data
+import dataloader.pretrain_dataset as module_data
 from data.utility import DatasetSplit
 from model.metric import MLPmetrics
 from parse_config import ConfigParser

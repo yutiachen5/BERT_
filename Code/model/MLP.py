@@ -1,8 +1,9 @@
 from sklearn.neural_network import MLPRegressor
 from torch import nn
+import torch
 
 
-class MLPRegression(nn.Module):
+class MlpRegression(nn.Module):
     def __init__(self):
         super().__init__()
         self.layers = nn.Sequential(
@@ -13,8 +14,5 @@ class MLPRegression(nn.Module):
             nn.Linear(32, 1)
         )
 
-    def forward(self,
-                logger,
-                x):
-        logger.info(self.layers)
+    def forward(self, x):
         return self.layers(x)
