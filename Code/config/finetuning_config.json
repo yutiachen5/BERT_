@@ -1,5 +1,5 @@
 {
-    "name": "BERT-Finetunning-BSP-FMFM",
+    "name": "finetuning_config",
     "n_gpu": 1,
 
     "data_loader": {
@@ -10,19 +10,17 @@
             "validation_split": 0.1,
             "test_split": 0.0,
             "num_workers": 1,
-            "data_dir": "../ProcessedData",
-            "seq_dir": "../ProcessedData/merged",
+            "smiles_dir": "../ProcessedData/GDSC_SMILES_merged.csv",
+            "snp_dir": "../ProcessedData/",
             "test_size": 1000,
             "shuffle": true
         }
     },
 
     "arch": {
-        "type": "BERTBinding",
+        "type": "MlpRegression",
         "args": {
-            "EpitopeBert_dir": "../Result/checkpoints/BERT-Epitope-Pretrain-FMFM-MAA/XXXX_XXXXXX",
-            "ReceptorBert_dir": "../Result/checkpoints/BERT-Beta-Pretrain-FMFM-MAA/XXXX_XXXXXX",
-            "emb_dim": 768
+
         }
     },
 
@@ -35,7 +33,7 @@
     },
     "loss": "bce_withlogits_loss",
     "metrics": [
-        "accuracy", "recall", "roc_auc"
+        "rmse", "mae"
     ],
     "lr_scheduler": {
         "type": "StepLR",
@@ -46,14 +44,11 @@
     },
     "trainer": {
         "epochs": 5,
-
         "save_dir": "../Result/",
         "save_period": 200,
         "verbosity": 2,
-        
         "monitor": "min val_loss",
         "early_stop": 3,
-
         "tensorboard": true
     }
 }

@@ -7,6 +7,8 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 
 # reference from: https://github.com/NTU-MedAI/S2DV
+
+
 def get_ECFP(mol, radio):
     ECFPs = mol2alt_sentence(mol, radio)
     if len(ECFPs) % (radio + 1) != 0:
@@ -71,7 +73,7 @@ def main(smiles_dataset):
     HBV_emb = pkl.load(open(os.path.join(model_root, 'HBV_emb.pkl'), 'rb+'))
 
     HBV_vec = get_sentence_vec(ECFP_list, HBV_emb, HBV_token)
-    smiles_dataset['smiles_embedding'] = HBV_vec
+    smiles_dataset['SMILES_embedding'] = HBV_vec
 
     # print('size of embedding vector: ',HBV_vec[1].size)
     # print('example: ', HBV_vec[1])
