@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import torch.nn.functional as F
+import torch.nn as nn
 
 
 def CrossEntropyLoss(output, target):
@@ -9,3 +10,8 @@ def CrossEntropyLoss(output, target):
 
 def bce_withlogits_loss(output, target):
     return F.binary_cross_entropy_with_logits(output, target)
+
+
+def MSE_loss(output, target):
+    criterion = nn.MSELoss()
+    return criterion(output, target)

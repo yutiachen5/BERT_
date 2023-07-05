@@ -132,7 +132,6 @@ class FineTuningTrainer(BaseTrainer):
             for batch_idx, (emb_input, target, cell_line, drug) in enumerate(self.test_data_loader):
                 emb_input = emb_input.to(self.device)
                 target = target.to(self.device)
-                target = target.to(self.device)
 
                 output = self.model(emb_input)
 

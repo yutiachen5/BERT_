@@ -21,6 +21,8 @@ class EmbDataset(Dataset):
         # self.snp_emb_data = snp_emb.main(snp_dir)
         # self.emb_data = np.inner(self.smiles_emb_data, self.snp_emb_data)
         self.ic50 = list(dataset['LN_IC50'])
+        self.cell_line_name = list(dataset['CELL_LINE_NAME'])
+        self.drug_name = list(dataset['DRUG_NAME'])
 
     def __len__(self):
         # return len(self.emb_data)
@@ -30,9 +32,12 @@ class EmbDataset(Dataset):
         # input_emb = self.emb_data[i]
         input_emb = self.smiles_emb_data[i]
         true_ic50 = self.ic50[i]
+        cell_line = self.cell_line_name[i]
+        drug = self.drug_name[i]
+
         input_tensor = torch.squeeze(torch.tensor(input_emb, dtype=torch.float32))
         ic50_tensor = torch.tensor(true_ic50, dtype=torch.float32).unsqueeze(-1)
-        return input_tensor, ic50_tensor
+        return input_tensor, ic50_tensor, cell_line, drug
 
 
 class EmbeddedDataset(BaseDataLoader):
@@ -74,7 +79,7 @@ class EmbeddedDataset(BaseDataLoader):
 
     def _load_smiles(self):
         df_smiles = pd.read_csv(self.smiles_dir)
-        df_smiles = df_smiles.loc[:5000, :]
+        df_smiles = df_smiles.loc[:50000, :]
         return df_smiles
 
     def _load_snp(self):
