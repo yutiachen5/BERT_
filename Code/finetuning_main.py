@@ -15,7 +15,8 @@ import model.metric as module_metric
 import model.MLP as module_arch
 from trainer.finetuning_trainer import FineTuningTrainer as Trainer
 from parse_config import ConfigParser
-
+import os
+from stat import S_IREAD, S_IRGRP, S_IROTH
 
 def main(config):
     logger = config.get_logger('train')
@@ -74,10 +75,10 @@ def main(config):
     mlp_save_dir = join(config.save_dir, 'MLP')
     logger.info(f'Saving the tuned MLP model to {mlp_save_dir}.')
     os.makedirs(mlp_save_dir)
-    model.EpitopeBert.save_pretrained(mlp_save_dir)
+    # os.chmod(mlp_save_dir, S_IREAD | S_IRGRP | S_IROTH)
+    # torch.save(model.state_dict(), mlp_save_dir)
 
-    test_output = trainer.test(epitope_tokenizer=epitope_tokenizer,
-                               receptor_tokenizer=receptor_tokenizer)
+    test_output = trainer.test()
     logger.info(test_output)
 
 

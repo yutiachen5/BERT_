@@ -44,7 +44,7 @@ class FineTuningTrainer(BaseTrainer):
         """
         self.model.train()
         self.train_metrics.reset()
-        for batch_idx, (emb_input, target) in enumerate(self.data_loader):
+        for batch_idx, (emb_input, target, cell_line, drug) in enumerate(self.data_loader):
             emb_input = emb_input.to(self.device)
             target = target.to(self.device)
             
@@ -96,7 +96,7 @@ class FineTuningTrainer(BaseTrainer):
         self.valid_metrics.reset()
         result_dict = {'y_true': [], 'y_pred': []}
         with torch.no_grad():
-            for batch_idx, (emb_input, target) in enumerate(self.valid_data_loader):
+            for batch_idx, (emb_input, target, cell_line, drug) in enumerate(self.valid_data_loader):
                 emb_input = emb_input.to(self.device)
                 target = target.to(self.device)
 
@@ -124,17 +124,17 @@ class FineTuningTrainer(BaseTrainer):
             self.writer.add_histogram(name, p, bins='auto')
         return valid_metrics
 
-    def test(self, epitope_tokenizer, receptor_tokenizer):
+    def test(self):
         self.model.eval()
-        result_dict = {'epitope': [], 'receptor':[], 
+        result_dict = {'cell_line_name': [], 'drug_name': [],
                        'y_true': [], 'y_pred': []}
         with torch.no_grad():
-            for batch_idx, (epitope_tokenized, receptor_tokenized, target) in enumerate(self.test_data_loader):
-                epitope_tokenized = {k: v.to(self.device) for k, v in epitope_tokenized.items()}
-                receptor_tokenized = {k: v.to(self.device) for k, v in receptor_tokenized.items()}
+            for batch_idx, (emb_input, target, cell_line, drug) in enumerate(self.test_data_loader):
+                emb_input = emb_input.to(self.device)
+                target = target.to(self.device)
                 target = target.to(self.device)
 
-                output = self.model(epitope_tokenized, receptor_tokenized)
+                output = self.model(emb_input)
 
                 y_pred = torch.sigmoid(output)
                 y_pred = y_pred.cpu().detach().numpy()
@@ -142,14 +142,8 @@ class FineTuningTrainer(BaseTrainer):
                 result_dict['y_pred'].append(y_pred)
                 result_dict['y_true'].append(y_true)
 
-                epitope = epitope_tokenizer.batch_decode(epitope_tokenized['input_ids'],
-                                                        skip_special_tokens=True)
-                epitope = [s.replace(" ", "") for s in epitope]
-                receptor = receptor_tokenizer.batch_decode(receptor_tokenized['input_ids'],
-                                                        skip_special_tokens=True)
-                receptor = [s.replace(" ", "") for s in receptor]
-                result_dict['epitope'].append(epitope)
-                result_dict['receptor'].append(receptor)
+                result_dict['cell_line_name'].append(cell_line)
+                result_dict['drug_name'].append(drug)
 
         test_metrics = {}
         y_pred = np.concatenate(result_dict['y_pred'])
@@ -157,8 +151,8 @@ class FineTuningTrainer(BaseTrainer):
         for met in self.metric_fns:
             test_metrics[met.__name__] = met(y_pred, y_true)
 
-        test_df = pd.DataFrame({'epitope': [v for l in result_dict['epitope'] for v in l],
-                                'receptor': [v for l in result_dict['receptor'] for v in l],
+        test_df = pd.DataFrame({'cell_line_name': [v for l in result_dict['cell_line_name'] for v in l],
+                                'drug_name': [v for l in result_dict['drug_name'] for v in l],
                                 'y_true': list(y_true.flatten()),
                                 'y_pred': list(y_pred.flatten())})
         test_df.to_csv(join(self.config.log_dir, 'test_result.csv'), index=False)
