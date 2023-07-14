@@ -6,19 +6,21 @@ import torch
 import pandas as pd
 from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
-from bert_data_prepare.tokenizer import get_tokenizer
-
+from transformers import BertTokenizer
+#from bert_data_prepare.tokenizer import get_tokenizer
 
 def min_power_greater_than(value, base=2):
-        """
-        Return the lowest power of the base that exceeds the given value
-        >>> min_power_greater_than(3, 4)
-        4.0
-        >>> min_power_greater_than(48, 2)
-        64.0
-        """
-        p = math.ceil(math.log(value, base))
-        return math.pow(base, p)
+    """
+    Return the lowest power of the base that exceeds the given value
+    >>> min_power_greater_than(3, 4)
+    4.0
+    >>> min_power_greater_than(48, 2)
+    64.0
+    """
+    p = math.ceil(math.log(value, base))
+    return math.pow(base, p)
+
+
 
 class SelfSupervisedDataset(Dataset):
     """
@@ -96,11 +98,16 @@ class MAADataset(object):
         self.seq_list = self._load_seq()
 
         self.logger.info('Start creating tokenizer...')
-        self.tokenizer = get_tokenizer(tokenizer_name=tokenizer_name,
-                                       add_hyphen=False,
-                                       logger=self.logger,
-                                       vocab_dir=vocab_dir,
-                                       token_length_list=token_length_list)
+        #self.tokenizer = get_tokenizer(tokenizer_name=tokenizer_name,
+        #                               add_hyphen=False,
+        #                               logger=self.logger,
+        #                               vocab_dir=vocab_dir,
+        #                               token_length_list=token_length_list)
+
+
+        self.tokenizer = BertTokenizer.from_pretrained('../SNP_processing',
+                                                  vocab_file='chr_diploid-vocab.json',
+                                                  merges_file='chr_diploid-merges.txt')
         self.split_fun = self.tokenizer.split
 
         if max_len is None:
