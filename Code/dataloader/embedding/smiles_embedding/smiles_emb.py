@@ -56,7 +56,7 @@ def get_sentence_vec(tokens_list, embedding, token_dict):
     return sent_vec_list
 
 
-def main(smiles_dataset):
+def smiles_embedding(smiles_dataset):
     smiles_list = np.asarray(smiles_dataset['SMILES'])
 
     ECFP_list = []
