@@ -8,17 +8,13 @@ from dataloader.embedding.smiles_embedding import smiles_emb
 from sklearn.model_selection import train_test_split
 
 
-class EmbDataset(Dataset):
+class DrugSensitivityDataset(Dataset):
     def __init__(self,
                  logger,
                  dataset):
         self.dataset = dataset
         self.logger = logger
 
-        logger.info('Embedding {} SMILES.'.format(len(self.dataset)))
-        self.smiles_emb_data = list(smiles_emb.main(self.dataset)['SMILES_embedding'])  # return dataset
-        # logger.info('Embedding {} SNP.'.format(len(self.dataset)))
-        # self.snp_emb_data = snp_emb.main(snp_dir)
         # self.emb_data = np.inner(self.smiles_emb_data, self.snp_emb_data)
         self.ic50 = list(dataset['LN_IC50'])
         self.cell_line_name = list(dataset['CELL_LINE_NAME'])
@@ -26,11 +22,11 @@ class EmbDataset(Dataset):
 
     def __len__(self):
         # return len(self.emb_data)
-        return len(self.smiles_emb_data)
+        return len(self.dataset)
 
     def __getitem__(self, i):
         # input_emb = self.emb_data[i]
-        input_emb = self.smiles_emb_data[i]
+        input_emb = self.dataset[i]
         true_ic50 = self.ic50[i]
         cell_line = self.cell_line_name[i]
         drug = self.drug_name[i]
@@ -62,14 +58,19 @@ class EmbeddedDataset(BaseDataLoader):
         self.snp_dir = snp_dir
         self.test_size = test_size
         self.shuffle = shuffle
-        # self.rng = np.random.default_rng(seed=self.seed)
 
         self.smiles_dataset = self._load_smiles()
+        logger.info('Embedding {} SMILES.'.format(len(self.smiles_dataset)))
+        self.smiles_emb_dataset = smiles_emb.smiles_embedding(self.smiles_dataset)  # return a df
+
         # self.snp_dataset = self._load_snp()
-        # self.dataset = self._merge()
+        # logger.info('Embedding {} SNP.'.format(len(self.snp_dataset)))
+        # self.snp_emb_dataset = snp_emb.snp_embedding(self.snp_dataset)
+
+        # self.dataset = self._merge(smiles_dataset = self.smiles_dataset, snp_dataset = self.snp_dataset)
 
         # train_df, test_df, valid_df = self._split_dataset(self.dataset)
-        train_df, test_df, valid_df = self._split_dataset(self.smiles_dataset)
+        train_df, test_df, valid_df = self._split_dataset(self.smiles_emb_dataset)
 
         train_dataset = self._get_dataset(train_df)
         test_dataset = self._get_dataset(test_df)
@@ -86,13 +87,13 @@ class EmbeddedDataset(BaseDataLoader):
         ls_snp = list(np.load(self.snp_dir))
         return ls_snp
 
-    def _merge(self):
-        self.smiles_dataset['SNP'] = self.snp_dataset
-        return self.smiles_dataset
+    def _merge(self, smiles_dataset, snp_dataset):
+        merged_dataset = pd.concat(smiles_dataset, snp_dataset, ignore_index=True)
+        return merged_dataset
 
     def _get_dataset(self, split_dataset):
-        emb_dataset = EmbDataset(dataset=split_dataset,
-                                 logger=self.logger)
+        emb_dataset = DrugSensitivityDataset(dataset=split_dataset,
+                                             logger=self.logger)
         return emb_dataset
 
     def _split_dataset(self, emb_data):
