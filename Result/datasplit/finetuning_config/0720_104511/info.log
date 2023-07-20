@@ -1,0 +1,37 @@
+2023-07-20 10:45:11,766 - train - INFO - Embedding 50001 SMILES.
+2023-07-20 10:45:27,763 - train - INFO - Number of pairs in train: 44911, valid: 4990, and test: 90.
+2023-07-20 10:45:27,763 - train - INFO - MlpRegression(
+  (layers): Sequential(
+    (0): Linear(in_features=512, out_features=256, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=256, out_features=64, bias=True)
+    (3): ReLU()
+    (4): Linear(in_features=64, out_features=32, bias=True)
+    (5): ReLU()
+    (6): Linear(in_features=32, out_features=1, bias=True)
+  )
+)
+2023-07-20 10:45:27,768 - trainer - WARNING - Warning: There's no GPU available on this machine,training will be performed on CPU.
+2023-07-20 10:45:33,919 - trainer - INFO - epoch: 1
+2023-07-20 10:45:33,919 - trainer - INFO -     train          : loss           : 12.04	rmse           : 3.26	mae            : 2.76	
+2023-07-20 10:45:33,919 - trainer - INFO -     validation     : val_loss       : 11.51	val_rmse       : 3.20	val_mae        : 2.71	
+2023-07-20 10:45:33,919 - trainer - INFO - Saving current best: model_best.pth ...
+2023-07-20 10:45:40,054 - trainer - INFO - epoch: 2
+2023-07-20 10:45:40,054 - trainer - INFO -     train          : loss           : 11.78	rmse           : 3.25	mae            : 2.75	
+2023-07-20 10:45:40,054 - trainer - INFO -     validation     : val_loss       : 11.11	val_rmse       : 3.19	val_mae        : 2.70	
+2023-07-20 10:45:40,058 - trainer - INFO - Saving current best: model_best.pth ...
+2023-07-20 10:45:46,358 - trainer - INFO - epoch: 3
+2023-07-20 10:45:46,358 - trainer - INFO -     train          : loss           : 11.07	rmse           : 3.23	mae            : 2.73	
+2023-07-20 10:45:46,358 - trainer - INFO -     validation     : val_loss       : 10.10	val_rmse       : 3.15	val_mae        : 2.66	
+2023-07-20 10:45:46,368 - trainer - INFO - Saving current best: model_best.pth ...
+2023-07-20 10:45:52,310 - trainer - INFO - epoch: 4
+2023-07-20 10:45:52,310 - trainer - INFO -     train          : loss           : 9.68	rmse           : 3.18	mae            : 2.67	
+2023-07-20 10:45:52,310 - trainer - INFO -     validation     : val_loss       : 8.55	val_rmse       : 3.10	val_mae        : 2.60	
+2023-07-20 10:45:52,310 - trainer - INFO - Saving current best: model_best.pth ...
+2023-07-20 10:45:58,445 - trainer - INFO - epoch: 5
+2023-07-20 10:45:58,445 - trainer - INFO -     train          : loss           : 8.29	rmse           : 3.13	mae            : 2.61	
+2023-07-20 10:45:58,445 - trainer - INFO -     validation     : val_loss       : 7.71	val_rmse       : 3.05	val_mae        : 2.55	
+2023-07-20 10:45:58,448 - trainer - INFO - Saving current best: model_best.pth ...
+2023-07-20 10:45:58,448 - test - INFO - Loading checkpoint: ..\Result\checkpoints\finetuning_config\0720_104511\model_best.pth ...
+2023-07-20 10:45:58,457 - test - INFO - Saving the tuned MLP model to ..\Result\checkpoints\finetuning_config\0720_104511\MLP.
+2023-07-20 10:45:58,466 - test - INFO - {'rmse': 3.1101608, 'mae': 2.6889231}
