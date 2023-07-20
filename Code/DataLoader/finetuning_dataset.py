@@ -26,7 +26,7 @@ class DrugSensitivityDataset(Dataset):
 
     def __getitem__(self, i):
         # input_emb = self.emb_data[i]
-        input_emb = self.dataset[i]
+        input_emb = self.dataset['SMILES_embedding'][i]
         true_ic50 = self.ic50[i]
         cell_line = self.cell_line_name[i]
         drug = self.drug_name[i]
@@ -62,6 +62,7 @@ class EmbeddedDataset(BaseDataLoader):
         self.smiles_dataset = self._load_smiles()
         logger.info('Embedding {} SMILES.'.format(len(self.smiles_dataset)))
         self.smiles_emb_dataset = smiles_emb.smiles_embedding(self.smiles_dataset)  # return a df
+        # print(self.smiles_emb_dataset)
 
         # self.snp_dataset = self._load_snp()
         # logger.info('Embedding {} SNP.'.format(len(self.snp_dataset)))
@@ -80,7 +81,7 @@ class EmbeddedDataset(BaseDataLoader):
 
     def _load_smiles(self):
         df_smiles = pd.read_csv(self.smiles_dir)
-        df_smiles = df_smiles.loc[:50000, :]
+        df_smiles = df_smiles.loc[:100000, :]
         return df_smiles
 
     def _load_snp(self):
@@ -89,12 +90,13 @@ class EmbeddedDataset(BaseDataLoader):
 
     def _merge(self, smiles_dataset, snp_dataset):
         merged_dataset = pd.concat(smiles_dataset, snp_dataset, ignore_index=True)
+        merged_dataset.reset_index(drop=True, inplace=True)
         return merged_dataset
 
     def _get_dataset(self, split_dataset):
-        emb_dataset = DrugSensitivityDataset(dataset=split_dataset,
-                                             logger=self.logger)
-        return emb_dataset
+        dataset = DrugSensitivityDataset(dataset=split_dataset,
+                                         logger=self.logger)
+        return dataset
 
     def _split_dataset(self, emb_data):
 
