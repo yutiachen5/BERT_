@@ -4,20 +4,26 @@
 import argparse
 import collections
 import torch
+import torch.nn as nn
 import numpy as np
 
 from transformers import (
     DataCollatorForLanguageModeling,
     TrainingArguments,
     Trainer,
-    EarlyStoppingCallback)
+    EarlyStoppingCallback,
+    AdamW)
 
-import data.bert_pretrain_mlp_dataset as module_data
-from data.utility import DatasetSplit
+import DataLoader.bert_pretrain_mlp_dataset as module_data
+from DataLoader.utility import DatasetSplit
 from model.pretrain import get_bert_model
-from model.metric import MLPmetrics
+
 from parse_config import ConfigParser
 
+def compute_loss(model_outputs, targets):
+    loss_fn = nn.CrossEntropyLoss()
+    loss = loss_fn(model_outputs, targets)
+    return loss
 
 def main(config):
     logger = config.get_logger('train')
@@ -71,7 +77,8 @@ def main(config):
         skip_memory_metrics=True,
         disable_tqdm=True,
         metric_for_best_model='acc',
-        logging_dir=config._log_dir)
+        logging_dir=config._log_dir,
+    )
 
     vocab_size = dataset.get_vocab_size()
     pad_token_id = dataset.get_pad_token_id()
@@ -89,17 +96,17 @@ def main(config):
     logger.info(f'Trainable parameters {params}.')
     
     token_with_special_list = dataset.get_token_list()
-    mlp_metrics = MLPmetrics(token_with_special_list=token_with_special_list,
-                              blosum_dir=config['metrics']['blosum_dir'],
-                              blosum=config['metrics']['blosum'])
+    optimizer = AdamW(trainable_params, lr=training_args.learning_rate)
+
     trainer = Trainer(
         model=model,
         args=training_args,
         data_collator=data_collator,
         train_dataset=train_dataset,
         eval_dataset=test_dataset,  # Defaults to None, see above
-        compute_metrics=mlp_metrics.compute_metrics,
-        callbacks = [EarlyStoppingCallback(early_stopping_patience=3)]
+        optimizer=optimizer,
+        compute_loss=compute_loss,
+        callbacks = [EarlyStoppingCallback(early_stopping_patience=3)],
     )
 
     trainer.train()
@@ -108,7 +115,7 @@ def main(config):
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser(description='PyTorch Template')
-    args.add_argument('-c', '--config', default='config.json', type=str,
+    args.add_argument('-c', '--config', default='config/pretraining_config.json', type=str,
                       help='config file path (default: None)')
     args.add_argument('-r', '--resume', default=None, type=str,
                       help='path to latest checkpoint (default: None)')

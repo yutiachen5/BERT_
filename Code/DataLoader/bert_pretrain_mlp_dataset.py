@@ -3,11 +3,13 @@
 import math
 from tokenize import Token
 import torch
-import pandas as pd
+import numpy as np
 from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
-from transformers import BertTokenizer
+from tokenizers import Tokenizer
+from tokenizers.models import BPE
 #from bert_data_prepare.tokenizer import get_tokenizer
+from os.path import join
 
 def min_power_greater_than(value, base=2):
     """
@@ -76,21 +78,18 @@ class SelfSupervisedDataset(Dataset):
         return " ".join(token_list)
         
 
-class MAADataset(object):
+class MLPDataset(object):
     def __init__(self, 
                  config, 
                  logger, 
                  seed, 
                  seq_dir,
-                 tokenizer_name, 
                  vocab_dir,
-                 token_length_list, 
-                 seq_name, 
+                 prefix,
                  max_len=None, 
                  test_split=0.1):
         self.config = config
         self.seq_dir = seq_dir
-        self.seq_name = seq_name
         self.logger = logger
         self.seed = seed
         self.test_split = test_split
@@ -104,10 +103,15 @@ class MAADataset(object):
         #                               vocab_dir=vocab_dir,
         #                               token_length_list=token_length_list)
 
+        vocab_filename = join(vocab_dir, "{}-vocab.json".format(prefix))
+        merges_filename = join(vocab_dir, "{}-merges.txt".format(prefix))
 
-        self.tokenizer = BertTokenizer.from_pretrained('../SNP_processing',
-                                                  vocab_file='chr_diploid-vocab.json',
-                                                  merges_file='chr_diploid-merges.txt')
+        #self.tokenizer = CharBPETokenizer(vocab_filename,merges_filename,)
+
+        vocab, merges = BPE.read_file(vocab_filename, merges_filename)
+        bpe = BPE(vocab, merges)
+        self.tokenizer = Tokenizer(bpe)
+
         self.split_fun = self.tokenizer.split
 
         if max_len is None:
@@ -132,9 +136,9 @@ class MAADataset(object):
         return self.bert_tokenizer
 
     def _load_seq(self):
-        seq_df = pd.read_csv(self.seq_dir)
-        seq_list = list(seq_df[self.seq_name])
-        self.logger.info(f'Load {len(seq_list)} form {self.seq_name}.')
+        #seq_df = pd.read_csv(self.seq_dir)
+        seq_list = list(np.load(self.seq_dir))
+        self.logger.info(f'Load {len(seq_list)} form {self.seq_dir}.')
         return seq_list
 
     def _split(self):
