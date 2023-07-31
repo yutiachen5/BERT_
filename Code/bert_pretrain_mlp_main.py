@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+import transformers
 from transformers import (
     DataCollatorForLanguageModeling,
     TrainingArguments,
@@ -17,13 +18,9 @@ from transformers import (
 import DataLoader.bert_pretrain_mlp_dataset as module_data
 from DataLoader.utility import DatasetSplit
 from model.pretrain import get_bert_model
+from model.metric import MAA_metrics
 
 from parse_config import ConfigParser
-
-def compute_loss(model_outputs, targets):
-    loss_fn = nn.CrossEntropyLoss()
-    loss = loss_fn(model_outputs, targets)
-    return loss
 
 def main(config):
     logger = config.get_logger('train')
@@ -94,9 +91,12 @@ def main(config):
     trainable_params = model.parameters()
     params = sum([np.prod(p.size()) for p in trainable_params if p.requires_grad])
     logger.info(f'Trainable parameters {params}.')
-    
+
     token_with_special_list = dataset.get_token_list()
-    optimizer = AdamW(trainable_params, lr=training_args.learning_rate)
+    maa_metrics = MAA_metrics(token_with_special_list=token_with_special_list)
+
+    #optimizer = config.init_obj('optimizer', transformers, trainable_params)
+    #lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
     trainer = Trainer(
         model=model,
@@ -104,9 +104,10 @@ def main(config):
         data_collator=data_collator,
         train_dataset=train_dataset,
         eval_dataset=test_dataset,  # Defaults to None, see above
-        optimizer=optimizer,
-        compute_loss=compute_loss,
+        #optimizer=optimizer,
         callbacks = [EarlyStoppingCallback(early_stopping_patience=3)],
+        #lr_scheduler=lr_scheduler
+        compute_metrics=maa_metrics.compute_metrics,
     )
 
     trainer.train()
