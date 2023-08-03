@@ -10,7 +10,7 @@ from tokenizers import Tokenizer
 from tokenizers.models import BPE
 # from bert_data_prepare.tokenizer import get_tokenizer
 from os.path import join
-from transformers import BertTokenizer
+from transformers import PreTrainedTokenizerFast
 import json
 
 
@@ -66,7 +66,7 @@ class SelfSupervisedDataset(Dataset):
         if not self._has_logged_example:
             self.logger.info(f"Example of tokenized input: {seq} -> {retval}")
             self._has_logged_example = True
-        return {"input_ids": torch.tensor(retval.input_ids, dtype=torch.long)}
+        return {"input_ids": torch.tensor(retval, dtype=torch.long)}
 
     def merge(self, other):
         """Merge this dataset with the other dataset"""
@@ -135,17 +135,14 @@ class MLPDataset(object):
         self.SEP = "|"
         self.CLS = "*"
 
-        self.bert_tokenizer = BertTokenizer.from_pretrained(tokenizer_dir,
-                                                            do_lower_case=False,
-                                                            do_basic_tokenize=True,
-                                                            tokenize_chinese_chars=True,
-                                                            pad_token=self.PAD,
-                                                            mask_token=self.MASK,
-                                                            unk_token=self.UNK,
-                                                            sep_token=self.SEP,
-                                                            cls_token=self.CLS,
-                                                            padding_side="right"
-                                                            )
+        self.bert_tokenizer = PreTrainedTokenizerFast(tokenizer_object=self.tokenizer,
+                                        model_max_length=max_len,
+                                        pad_token=self.PAD,
+                                        mask_token=self.MASK,
+                                        unk_token=self.UNK,
+                                        sep_token=self.SEP,
+                                        cls_token=self.CLS,
+                                        padding_side="right")
         self.bert_tokenizer.save_pretrained(config._save_dir)
 
     def get_token_list(self):
