@@ -1,4 +1,5 @@
 {
+  "add_special_tokens": true,
   "clean_up_tokenization_spaces": true,
   "cls_token": "*",
   "mask_token": ".",

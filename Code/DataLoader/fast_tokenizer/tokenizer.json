@@ -2,7 +2,53 @@
   "version": "1.0",
   "truncation": null,
   "padding": null,
-  "added_tokens": [],
+  "added_tokens": [
+    {
+      "id": 22000,
+      "content": "$",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": true,
+      "special": false
+    },
+    {
+      "id": 22001,
+      "content": ".",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": true,
+      "special": false
+    },
+    {
+      "id": 22002,
+      "content": "?",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": true,
+      "special": false
+    },
+    {
+      "id": 22003,
+      "content": "|",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": true,
+      "special": false
+    },
+    {
+      "id": 22004,
+      "content": "*",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": true,
+      "special": false
+    }
+  ],
   "normalizer": null,
   "pre_tokenizer": null,
   "post_processor": null,
