@@ -118,8 +118,12 @@ class MLPDataset(object):
         bpe = BPE(vocab, merges)
         self.tokenizer = Tokenizer(bpe)
 
-        tokenizer_dir = "bert-SNP.json"
-        self.tokenizer.save(tokenizer_dir)
+        self.PAD = "$"
+        self.MASK = "."
+        self.UNK = "?"
+        self.SEP = "|"
+        self.CLS = "*"
+        self.tokenizer.add_tokens([self.PAD,self.MASK,self.UNK,self.SEP,self.CLS])
 
         # self.split_fun = self.tokenizer.split
 
@@ -127,13 +131,7 @@ class MLPDataset(object):
             self.max_len = max([len(self.split_fun(s)) for s in self.seq_list])
         else:
             self.max_len = max_len
-        max_len_rounded = min_power_greater_than(self.max_len, base=2)
-
-        self.PAD = "$"
-        self.MASK = "."
-        self.UNK = "?"
-        self.SEP = "|"
-        self.CLS = "*"
+        #max_len_rounded = min_power_greater_than(self.max_len, base=2)
 
         self.bert_tokenizer = PreTrainedTokenizerFast(tokenizer_object=self.tokenizer,
                                         model_max_length=max_len,
@@ -142,7 +140,8 @@ class MLPDataset(object):
                                         unk_token=self.UNK,
                                         sep_token=self.SEP,
                                         cls_token=self.CLS,
-                                        padding_side="right")
+                                        padding_side="right",
+                                        add_special_tokens=True )
         self.bert_tokenizer.save_pretrained(config._save_dir)
 
     def get_token_list(self):
