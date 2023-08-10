@@ -21,8 +21,12 @@ from model.pretrain import get_bert_model
 from model.metric import MAA_metrics
 
 from parse_config import ConfigParser
+import os
+
 
 def main(config):
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32"
+
     logger = config.get_logger('train')
 
     # fix random seeds for reproducibility
