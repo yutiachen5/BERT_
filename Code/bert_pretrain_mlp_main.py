@@ -25,7 +25,7 @@ import os
 
 
 def main(config):
-    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32"
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = f'max_split_size_mb:{config["max_split_size"]}'
 
     logger = config.get_logger('train')
 
