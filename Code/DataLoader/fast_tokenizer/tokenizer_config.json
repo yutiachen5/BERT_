@@ -1,0 +1,12 @@
+{
+  "add_special_tokens": true,
+  "clean_up_tokenization_spaces": true,
+  "cls_token": "*",
+  "mask_token": ".",
+  "model_max_length": 4096,
+  "pad_token": "$",
+  "padding_side": "right",
+  "sep_token": "|",
+  "tokenizer_class": "PreTrainedTokenizerFast",
+  "unk_token": "?"
+}

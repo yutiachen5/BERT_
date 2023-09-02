@@ -66,7 +66,7 @@ class EmbeddedDataset(BaseDataLoader):
 
         # self.snp_dataset = self._load_snp()
         # logger.info('Embedding {} SNP.'.format(len(self.snp_dataset)))
-        # self.snp_emb_dataset = snp_emb.snp_embedding(self.snp_dataset)
+        # self.snp_emb_dataset = snp_emb.snp_emb.py(self.snp_dataset)
 
         # self.dataset = self._merge(smiles_dataset = self.smiles_dataset, snp_dataset = self.snp_dataset)
 
