@@ -11,7 +11,8 @@
             "test_split": 0.0,
             "num_workers": 1,
             "smiles_dir": "../ProcessedData/GDSC_SMILES_merged.csv",
-            "snp_dir": "../ProcessedData/",
+            "pretrained_mdl_dir": "../Code/dataloader/embedding/snp_embedding/0811_113404",
+            "downstream_data_dir": "../ProcessedData/downstream_data/",
             "test_size": 100,
             "shuffle": true
         }

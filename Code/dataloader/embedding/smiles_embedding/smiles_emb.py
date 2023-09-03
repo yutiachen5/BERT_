@@ -73,7 +73,7 @@ def smiles_embedding(smiles_dataset):
     HBV_emb = pkl.load(open(os.path.join(model_root, 'HBV_emb.pkl'), 'rb+'))
 
     HBV_vec = get_sentence_vec(ECFP_list, HBV_emb, HBV_token)
-    smiles_dataset['SMILES_embedding'] = HBV_vec
+    smiles_dataset['SMILES_EMB'] = HBV_vec
 
     # print('size of embedding vector: ',HBV_vec[1].size)
     # print('example: ', HBV_vec[1])
