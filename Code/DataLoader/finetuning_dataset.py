@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from base import BaseDataLoader
 from dataloader.embedding.smiles_embedding import smiles_emb
-from dataloader.embedding.snp_embedding import snp_emb
+from dataloader.embedding.snp_embedding import SNPEmbedding
 from sklearn.model_selection import train_test_split
 
 
@@ -72,7 +72,11 @@ class EmbeddedDataset(BaseDataLoader):
         # print(self.smiles_emb_dataset)
 
         logger.info('Embedding {} SNP.'.format(len(self.smiles_dataset)))
-        self.snp_emb_dataset = snp_emb.snp_emb(self.pretrained_mdl_dir, self.smiles_dir, self.downstream_data_dir)
+        self.snp_emb_dataset = SNPEmbedding(self.logger,
+                                            self.pretrained_mdl_dir,
+                                            self.smiles_dir,
+                                            self.downstream_data_dir)
+        self.snp_emb_dataset.cell_line_embedding()
 
         self.dataset = self._merge(smiles_dataset=self.smiles_emb_dataset, snp_dataset=self.snp_emb_dataset)
 
