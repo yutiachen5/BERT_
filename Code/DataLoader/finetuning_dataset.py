@@ -69,14 +69,13 @@ class EmbeddedDataset(BaseDataLoader):
         self.smiles_dataset = self._load_smiles()
         logger.info('Embedding {} SMILES.'.format(len(self.smiles_dataset)))
         self.smiles_emb_dataset = smiles_emb.smiles_embedding(self.smiles_dataset)  # return a df
-        # print(self.smiles_emb_dataset)
 
         logger.info('Embedding {} SNP.'.format(len(self.smiles_dataset)))
         self.snp_emb_dataset = SNPEmbedding(self.logger,
                                             self.pretrained_mdl_dir,
                                             self.smiles_dir,
                                             self.downstream_data_dir)
-        self.snp_emb_dataset.cell_line_embedding()
+        self.snp_emb_dataset = self.snp_emb_dataset.cell_line_embedding()  # return a df
 
         self.dataset = self._merge(smiles_dataset=self.smiles_emb_dataset, snp_dataset=self.snp_emb_dataset)
 
