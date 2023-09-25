@@ -4,6 +4,7 @@ import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from base import BaseDataLoader
+import dataloader.embedding.smiles_embedding as module_arch
 from dataloader.embedding.smiles_embedding import smiles_emb
 from dataloader.embedding.snp_embedding import SNPEmbedding
 from sklearn.model_selection import train_test_split

@@ -30,7 +30,7 @@ class SNPEmbedding(nn.Module):
             nn.Linear(96, 1)
         )
 
-    def forward(self, x):
+    def forward(self):
         ls_cell_line = pd.read_csv(self.smiles_dir)['DEPMAP_ID'].unique()
         chr_emb = self.cell_line_embedding(ls_cell_line)
         output = self.MLP_predict(chr_emb)  # [24, 768] --> [1,768], emb of a cel line
