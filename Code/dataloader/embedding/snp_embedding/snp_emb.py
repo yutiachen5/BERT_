@@ -3,42 +3,39 @@ import os
 import torch
 from torch import nn
 from transformers import BertModel, PreTrainedTokenizerFast
+from model.snp_MLP import SNPEmbedding
 
 
-class SNPEmbedding(nn.Module):
+# read data of snp
+class SNPData():
     def __init__(self,
                  logger,
                  pretrained_mdl_dir,
                  smiles_dir,
                  downstream_data_dir):
-        super().__init__()
         self.logger = logger
         self.pretrained_mdl_dir = pretrained_mdl_dir
         self.smiles_dir = smiles_dir
-        self.downstream_data_dir = downstream_data_dir
+        self.downstream_data_dir = downstream_data_dir  # "../ProcessedData/downstream_data/"
 
         self.snp_bert = BertModel.from_pretrained(pretrained_mdl_dir)
         self.tokenizer = PreTrainedTokenizerFast.from_pretrained(pretrained_mdl_dir)
 
-        self.MLP_predict = nn.Sequential(
-            nn.Linear(768, 384),
-            nn.ReLU(),
-            nn.Linear(384, 192),
-            nn.ReLU(),
-            nn.Linear(192, 96),
-            nn.ReLU(),
-            nn.Linear(96, 1)
-        )
+        self.ls_cell_line = pd.read_csv(self.smiles_dir)['DEPMAP_ID'].unique()
 
-    def forward(self):
-        ls_cell_line = pd.read_csv(self.smiles_dir)['DEPMAP_ID'].unique()
-        chr_emb = self.cell_line_embedding(ls_cell_line)
-        output = self.MLP_predict(chr_emb)  # [24, 768] --> [1,768], emb of a cel line
-        return output
-
-    def chr_embedding(self, ls_cell_line):
+    def cell_line_embedding(self, ls_cell_line):
+        ls_cell_line_emb = []
+        mlp_mdl = SNPEmbedding()
         for cell_line in ls_cell_line:
-            chr_emb = self.pos_embedding(cell_line)  # [24,768], emb of a chr given a cell line
+            chr_emb = self.chr_embedding(cell_line)  # [24,768]
+            cell_line_emb = mlp_mdl(chr_emb)  # [24,768] --> [1,768]
+            ls_cell_line_emb.append(cell_line_emb)
+
+        dic_snp = {'cell_line': ls_cell_line, 'cell_line_emb': ls_cell_line_emb}
+        return pd.DataFrame(dic_snp)
+
+    def chr_embedding(self, cell_line):
+        chr_emb = self.pos_embedding(cell_line)  # [24,768], emb of a chr given a cell line
         return chr_emb
 
     def pos_embedding(self, cell_line):
@@ -58,7 +55,7 @@ class SNPEmbedding(nn.Module):
                 else:
                     chr_pos_emb = torch.concat((chr_pos_emb, self.snp_embedding(chr_dir+pos)), 0)
                 idx += 1
-            ls_chr_emb.append(torch.mean(chr_pos_emb, 1))  # [number of chr pos, 768] --> [1,768], embedding of a chr
+            ls_chr_emb.append(torch.mean(chr_pos_emb, 1))  # [number of pos, 768] --> [1,768], embedding of a chr
 
         # concat embedding of all chrs
         chr_emb = ls_chr_emb[0]

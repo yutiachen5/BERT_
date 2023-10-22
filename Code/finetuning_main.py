@@ -16,7 +16,6 @@ import model.MLP as module_arch
 from trainer.finetuning_trainer import FineTuningTrainer as Trainer
 from parse_config import ConfigParser
 import os
-from stat import S_IREAD, S_IRGRP, S_IROTH
 
 def main(config):
     logger = config.get_logger('train')

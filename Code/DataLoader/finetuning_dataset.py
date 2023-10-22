@@ -4,9 +4,7 @@ import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from base import BaseDataLoader
-import dataloader.embedding.smiles_embedding as module_arch
-from dataloader.embedding.smiles_embedding import smiles_emb
-from dataloader.embedding.snp_embedding import SNPEmbedding
+from dataloader.embedding.snp_embedding import snp_emb
 from dataloader.embedding.smiles_embedding import smiles_emb
 from sklearn.model_selection import train_test_split
 
@@ -17,22 +15,17 @@ class DrugSensitivityDataset(Dataset):
                  dataset):
         self.dataset = dataset
         self.logger = logger
-
-        # self.emb_data = np.inner(self.smiles_emb_data, self.snp_emb_data)
         self.ic50 = list(dataset['LN_IC50'])
         self.cell_line_name = list(dataset['CELL_LINE_NAME'])
         self.drug_name = list(dataset['DRUG_NAME'])
 
     def __len__(self):
-        # return len(self.emb_data)
         return len(self.dataset)
 
     def __getitem__(self, i):
-        # input_emb = self.emb_data[i]
         smiles_emb = self.dataset['SMILES_EMB'][i]
         snp_emb = self.dataset['SNP_EMB'][i]
         input_emb = torch.concat((smiles_emb, snp_emb), 1)
-        input_emb = self.dataset['SMILES_embedding'][i]
         true_ic50 = self.ic50[i]
         cell_line = self.cell_line_name[i]
         drug = self.drug_name[i]
@@ -75,28 +68,16 @@ class EmbeddedDataset(BaseDataLoader):
         logger.info('Embedding {} SMILES.'.format(len(self.smiles_dataset)))
         self.smiles_emb_dataset = smiles_emb.smiles_embedding(self.smiles_dataset)  # return a df
 
-
         logger.info('Embedding {} SNP.'.format(len(self.smiles_dataset)))
-        self.snp_emb_dataset = SNPEmbedding(self.logger,
-                                            self.pretrained_mdl_dir,
-                                            self.smiles_dir,
-                                            self.downstream_data_dir)
+        self.snp_emb_dataset = snp_emb.SNPData(self.logger,
+                                       self.smiles_dir,
+                                       self.downstream_data_dir)
         self.snp_emb_dataset = self.snp_emb_dataset.cell_line_embedding()  # return a df
 
         self.dataset = self._merge(smiles_dataset=self.smiles_emb_dataset, snp_dataset=self.snp_emb_dataset)
 
         train_df, test_df, valid_df = self._split_dataset(self.dataset)
-        # print(self.smiles_emb_dataset)
-
-        # self.snp_dataset = self._load_snp()
-        # logger.info('Embedding {} SNP.'.format(len(self.snp_dataset)))
-        # self.snp_emb_dataset = snp_emb.snp_embedding(self.snp_dataset)
-
-        # self.dataset = self._merge(smiles_dataset = self.smiles_dataset, snp_dataset = self.snp_dataset)
-
         # train_df, test_df, valid_df = self._split_dataset(self.dataset)
-        train_df, test_df, valid_df = self._split_dataset(self.smiles_emb_dataset)
-
 
         train_dataset = self._get_dataset(train_df)
         test_dataset = self._get_dataset(test_df)
@@ -106,13 +87,12 @@ class EmbeddedDataset(BaseDataLoader):
 
     def _load_smiles(self):
         df_smiles = pd.read_csv(self.smiles_dir)
-        # df_smiles = df_smiles.loc[:100000, :]
         return df_smiles
 
     def _merge(self, smiles_dataset, snp_dataset):
         merged_dataset = pd.merge(smiles_dataset, snp_dataset, on='DEPMAP_ID')
         # cell-line name, drug name, LN IC50, smiles, depmap id, smiles_emb, snp_emb
-        df_smiles = df_smiles.loc[:100000, :]
+        df_smiles = merged_dataset.loc[:100000, :]
         return df_smiles
 
     def _load_snp(self):
